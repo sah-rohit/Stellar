@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STELLAR | Premium Cosmic Archive</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&family=Syne:wght@400;600;700;800&family=Syncopate:wght@400;700;900&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Syne', 'sans-serif'],
+                        syncopate: ['Syncopate', 'sans-serif'],
+                    },
+                    colors: {
+                        black: '#030303',
+                        white: '#f4f4f4',
+                        gray: '#888888',
+                        pureblack: '#000000',
+                        purewhite: '#ffffff',
+                        accent: '#2a2a35'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Base Styles & Utility */
+        body {
+            background-color: #030303;
+            color: #f4f4f4;
+            overflow-x: hidden;
+            cursor: none;
+            -webkit-font-smoothing: antialiased;
+            scroll-behavior: auto;
+        }
+
+        @keyframes drift {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50vh); }
+        }
+        @keyframes drift-reverse {
+            0% { transform: translateY(-50vh); }
+            100% { transform: translateY(0); }
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 0.3; }
+        }
+        @keyframes pulseGrid {
+            0% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        .cosmic-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: -1;
+            background-image:
+                linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 100px 100px;
+            mask-image: radial-gradient(circle at center, black 30%, transparent 90%);
+            -webkit-mask-image: radial-gradient(circle at center, black 30%, transparent 90%);
+            animation: pulseGrid 4s ease-in-out infinite alternate;
+        }
+
+        .starfield-layer-1,
+        .starfield-layer-2 {
+            position: fixed;
+            top: -50vh;
+            left: 0;
+            width: 100vw;
+            height: 200vh;
+            pointer-events: none;
+            background-repeat: repeat;
+        }
+
+        .starfield-layer-1 {
+            z-index: -2;
+            background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='30' r='1' fill='rgba(255,255,255,0.6)'/%3E%3Ccircle cx='70' cy='80' r='1.5' fill='rgba(255,255,255,0.3)'/%3E%3Ccircle cx='140' cy='20' r='1' fill='rgba(255,255,255,0.8)'/%3E%3Ccircle cx='180' cy='150' r='2' fill='rgba(255,255,255,0.2)'/%3E%3Ccircle cx='40' cy='180' r='1' fill='rgba(255,255,255,0.5)'/%3E%3Ccircle cx='100' cy='110' r='1.5' fill='rgba(255,255,255,0.4)'/%3E%3C/svg%3E");
+            animation: drift 100s linear infinite, twinkle 8s ease-in-out infinite;
+        }
+
+        .starfield-layer-2 {
+            z-index: -3;
+            background-image: url("data:image/svg+xml,%3Csvg width='300' height='300' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='50' cy='150' r='2' fill='rgba(255,255,255,0.3)'/%3E%3Ccircle cx='200' cy='50' r='1' fill='rgba(255,255,255,0.5)'/%3E%3Ccircle cx='250' cy='250' r='2.5' fill='rgba(255,255,255,0.1)'/%3E%3C/svg%3E");
+            animation: drift-reverse 150s linear infinite, twinkle 12s ease-in-out infinite;
+        }
+
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0.05;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* Precision Cursor */
+        .cursor-dot,
+        .cursor-outline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            z-index: 99999;
+            pointer-events: none;
+            mix-blend-mode: difference;
+            will-change: transform, width, height;
+        }
+
+        .cursor-dot {
+            width: 6px;
+            height: 6px;
+            background-color: white;
+        }
+
+        .cursor-outline {
+            width: 36px;
+            height: 36px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1), height 0.3s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.3s, border-color 0.3s;
+        }
+
+        .cursor-hover .cursor-outline {
+            width: 64px;
+            height: 64px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: transparent;
+            backdrop-filter: blur(2px);
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+
+            .cursor-dot,
+            .cursor-outline {
+                display: none !important;
+            }
+
+            body {
+                cursor: auto;
+            }
+        }
+
+        /* Preloader */
+        #preloader {
+            position: fixed;
+            inset: 0;
+            background: #030303;
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .geometric-crosshair {
+            position: absolute;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+            background:
+                linear-gradient(to right, transparent 49.9%, rgba(255, 255, 255, 0.05) 49.9%, rgba(255, 255, 255, 0.05) 50.1%, transparent 50.1%),
+                linear-gradient(to bottom, transparent 49.9%, rgba(255, 255, 255, 0.05) 49.9%, rgba(255, 255, 255, 0.05) 50.1%, transparent 50.1%);
+        }
+
+        /* Page Management & Transitions */
+        .page {
+            display: none;
+            opacity: 0;
+            width: 100%;
+            will-change: opacity;
+        }
+
+        .page.active {
+            display: flex;
+            flex-direction: column;
+            opacity: 1;
+        }
+
+        #transition-curtain {
+            position: fixed;
+            inset: 0;
+            background: #030303;
+            z-index: 9000;
+            transform: translateY(100%);
+            will-change: transform;
+            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Typography & Splitting Utility */
+        .char {
+            display: inline-block;
+            will-change: transform, opacity, filter;
+        }
+
+        .word-mask {
+            display: inline-block;
+            overflow: hidden;
+            vertical-align: bottom;
+            padding-bottom: 0.1em;
+            margin-bottom: -0.1em;
+        }
+
+        .perspective-text {
+            perspective: 1000px;
+        }
+
+        .text-enhancer-wrap {
+            position: relative;
+            display: inline-block;
+            font-weight: inherit;
+        }
+
+        .text-enhancer-base {
+            opacity: 0.1;
+        }
+
+        .text-enhancer-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            color: inherit;
+            white-space: nowrap;
+            overflow: hidden;
+            clip-path: inset(0 100% 0 0);
+            will-change: clip-path;
+        }
+
+        /* Structural Elements */
+        nav {
+            mix-blend-mode: difference;
+        }
+
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.8);
+            z-index: 1001;
+            width: 0%;
+        }
+
+        /* Archive Specifics */
+        .archive-section {
+            min-height: 100dvh;
+            width: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .horizontal-wrapper,
+        .archive-horizontal-container {
+            display: flex;
+            height: 100dvh;
+            flex-wrap: nowrap;
+            will-change: transform;
+        }
+
+        .horizontal-wrapper {
+            width: 300dvw;
+        }
+
+        .archive-horizontal-container {
+            width: 500dvw;
+        }
+
+        .horizontal-panel,
+        .archive-panel {
+            width: 100dvw;
+            height: 100dvh;
+            display: flex;
+            flex-shrink: 0;
+            position: relative;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .archive-panel {
+            flex-direction: column;
+        }
+
+        /* Geometric Components */
+        .orbital-ring {
+            position: absolute;
+            border: 1px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            animation: spin 30s linear infinite;
+            pointer-events: none;
+        }
+
+        .orbital-ring.reverse {
+            animation-direction: reverse;
+            animation-duration: 40s;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .velocity-stroke {
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.8);
+            color: transparent;
+            transition: color 0.4s cubic-bezier(0.23, 1, 0.32, 1), -webkit-text-stroke 0.4s;
+        }
+
+        .velocity-stroke:hover {
+            color: white;
+            -webkit-text-stroke: 1px transparent;
+        }
+
+        .magnetic-btn {
+            padding: 1rem 2.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 999px;
+            display: inline-block;
+            transition: background 0.4s, color 0.4s, border-color 0.4s;
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .magnetic-btn:hover {
+            background: white;
+            color: black;
+            border-color: white;
+        }
+
+        /* Notification Toast */
+        #toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 4px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            transform: translateX(120%);
+            transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        /* Mobile Menus */
+        .mobile-menu-overlay {
+            position: fixed;
+            inset: 0;
+            background: #030303;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            clip-path: circle(0% at calc(100% - 40px) 40px);
+            pointer-events: none;
+            will-change: clip-path;
+        }
+
+        .mobile-menu-overlay.open {
+            pointer-events: auto;
+        }
+
+        .mobile-nav-link {
+            font-size: clamp(1.8rem, 8vw, 3.5rem);
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #f4f4f4;
+            cursor: pointer;
+            padding: 0.4em 0;
+            position: relative;
+            display: block;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: color 0.3s ease;
+        }
+
+        .mobile-nav-link:hover {
+            color: #888888;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: #f4f4f4;
+            cursor: pointer;
+            background: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.6rem 1.2rem;
+            transition: background 0.3s, color 0.3s;
+            z-index: 10;
+        }
+
+        .close-btn:hover {
+            background: #f4f4f4;
+            color: #030303;
+        }
+    </style>
+</head>
+
+<body class="antialiased selection:bg-white selection:text-black">
+
+    <!-- Global Background Elements -->
+    <div class="starfield-layer-1"></div>
+    <div class="starfield-layer-2"></div>
+    <div class="cosmic-grid"></div>
+    <div class="noise"></div>
+    <div class="geometric-crosshair"></div>
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+    <div class="scroll-progress"></div>
+    <div id="toast-container"></div>
+
+    <!-- Preloader -->
+    <div id="preloader">
+        <div class="overflow-hidden mb-6 text-center">
+            <h1 class="font-display font-bold text-5xl md:text-8xl tracking-widest uppercase" id="loader-text">0%</h1>
+        </div>
+        <div class="w-64 h-[1px] bg-white/10 mt-4 relative">
+            <div id="loader-bar"
+                class="absolute top-0 left-0 h-full bg-white w-0 shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
+        </div>
+    </div>
+
+    <!-- Cinematic Transition Curtain -->
+    <div id="transition-curtain">
+        <h2 class="font-syncopate text-4xl md:text-7xl font-black text-white tracking-[0.2em] opacity-0 uppercase"
+            id="curtain-text">STELLAR</h2>
+    </div>
+
+    <!-- ==================== NAVIGATIONS ==================== -->
+
+    <!-- Main Navigation (Pages 1, 2, 3) -->
+    <nav id="nav-main"
+        class="fixed top-0 left-0 w-full p-6 md:p-10 z-50 flex justify-between items-center pointer-events-none opacity-0 transition-opacity duration-500">
+        <div class="text-xl font-display font-bold tracking-[0.3em] pointer-events-auto interactive"
+            onclick="switchPage('page-home', 'main')">
+            <span
+                class="inline-block hover:-skew-x-[12deg] origin-bottom transition-transform duration-500 ease-out cursor-pointer"
+                style="will-change: transform;">STELLAR</span>
+        </div>
+        <div class="hidden md:flex gap-10 font-sans text-xs uppercase tracking-[0.2em] pointer-events-auto">
+            <button onclick="switchPage('page-home', 'main')"
+                class="interactive hover:text-white transition-colors nav-link text-white"
+                data-target="page-home">Home</button>
+            <button onclick="switchPage('page-about', 'main')"
+                class="interactive hover:text-white transition-colors nav-link text-gray"
+                data-target="page-about">Cosmology</button>
+            <button onclick="switchPage('page-connect', 'main')"
+                class="interactive hover:text-white transition-colors nav-link text-gray"
+                data-target="page-connect">Comms</button>
+            <button onclick="switchPage('page-archive', 'archive')"
+                class="interactive hover:text-white transition-colors nav-link text-gray flex items-center gap-2">Archive
+                <span class="text-[8px]">↗</span></button>
+        </div>
+        <button onclick="toggleMobileMenu('main')"
+            class="md:hidden pointer-events-auto interactive text-xs uppercase tracking-[0.2em] border border-white/20 px-5 py-2 hover:bg-white hover:text-black transition-colors rounded-full">Menu</button>
+    </nav>
+
+    <!-- Archive Navigation (Page 4) -->
+    <nav id="nav-archive"
+        class="fixed top-0 left-0 w-full p-6 md:px-10 md:py-8 z-50 flex justify-between items-center pointer-events-none opacity-0 transition-opacity duration-500 hidden">
+        <div class="font-syncopate font-bold text-2xl tracking-tighter pointer-events-auto interactive cursor-pointer"
+            onclick="gsap.to(window, {duration: 1.5, scrollTo: {y: '#archive-hero'}, ease: 'power4.inOut'})">S.</div>
+        <div
+            class="hidden md:flex gap-8 uppercase text-[9px] tracking-[0.3em] font-medium items-center pointer-events-auto">
+            <button onclick="gsap.to(window, {duration: 1.5, scrollTo: {y: '#archive-hero'}, ease: 'power4.inOut'})"
+                class="hover:opacity-50 transition-opacity interactive">Index</button>
+            <button onclick="gsap.to(window, {duration: 1.5, scrollTo: {y: '#archive-about'}, ease: 'power4.inOut'})"
+                class="hover:opacity-50 transition-opacity interactive">Mechanics</button>
+            <button onclick="gsap.to(window, {duration: 1.5, scrollTo: {y: '#archive-gallery'}, ease: 'power4.inOut'})"
+                class="hover:opacity-50 transition-opacity interactive">Constellations</button>
+            <button onclick="gsap.to(window, {duration: 1.5, scrollTo: {y: '#archive-social'}, ease: 'power4.inOut'})"
+                class="hover:opacity-50 transition-opacity interactive">Relay</button>
+            <button onclick="switchPage('page-home', 'main')"
+                class="hover:bg-white hover:text-black transition-colors interactive flex items-center gap-1 border border-white/30 px-5 py-2 rounded-full ml-4">Home
+                <span class="text-[8px]">↗</span></button>
+        </div>
+        <button onclick="triggerToast('Establishing Secure Connection...')"
+            class="hidden md:block magnetic-btn interactive text-[9px] uppercase tracking-[0.2em] px-6 py-2 pointer-events-auto">
+            Transmission
+        </button>
+        <button onclick="toggleMobileMenu('archive')"
+            class="md:hidden pointer-events-auto interactive text-xs uppercase tracking-[0.2em] border border-white/20 px-5 py-2 hover:bg-white hover:text-black transition-colors rounded-full">Menu</button>
+    </nav>
+
+    <!-- Mobile Menus -->
+    <div id="mobile-menu-main" class="mobile-menu-overlay font-display">
+        <button class="close-btn" onclick="toggleMobileMenu('main')">Close ✕</button>
+        <nav class="flex flex-col items-center gap-4">
+            <button class="mobile-nav-link" onclick="mobileNavTo('page-home', 'main')">Home</button>
+            <button class="mobile-nav-link" onclick="mobileNavTo('page-about', 'main')">Cosmology</button>
+            <button class="mobile-nav-link" onclick="mobileNavTo('page-connect', 'main')">Comms</button>
+            <button class="mobile-nav-link flex items-center gap-2 text-white/50 mt-4 text-xl"
+                onclick="mobileNavTo('page-archive', 'archive')">Archive <span class="text-sm">↗</span></button>
+        </nav>
+        <div class="absolute bottom-8 font-sans text-[0.65rem] uppercase tracking-[0.25em] text-white/30">© 2026 STELLAR
+            ORBIT</div>
+    </div>
+
+    <div id="mobile-menu-archive" class="mobile-menu-overlay font-syncopate">
+        <button class="close-btn" onclick="toggleMobileMenu('archive')">Close ✕</button>
+        <nav class="flex flex-col items-center gap-3">
+            <button class="mobile-nav-link text-2xl md:text-3xl"
+                onclick="mobileScrollTo('#archive-hero', 'archive')">Index</button>
+            <button class="mobile-nav-link text-2xl md:text-3xl"
+                onclick="mobileScrollTo('#archive-about', 'archive')">Mechanics</button>
+            <button class="mobile-nav-link text-2xl md:text-3xl"
+                onclick="mobileScrollTo('#archive-gallery', 'archive')">Constellations</button>
+            <button class="mobile-nav-link text-2xl md:text-3xl"
+                onclick="mobileScrollTo('#archive-social', 'archive')">Relay</button>
+            <button class="mobile-nav-link text-xl flex items-center gap-2 mt-6 text-white/50 font-sans"
+                onclick="mobileNavTo('page-home', 'main')">Return Home <span class="text-xs">↗</span></button>
+        </nav>
+        <div class="absolute bottom-8 font-sans text-[0.6rem] uppercase tracking-[0.25em] text-white/30">© 2026 ARCHIVE
+            DEEP</div>
+    </div>
+
+    <!-- ==================== MAIN CONTENT (SPA CONTAINER) ==================== -->
+    <main id="main-content">
+
+        <!-- ===== PAGE 1: HOME ===== -->
+        <section id="page-home" class="page active">
+            <!-- Hero -->
+            <header
+                class="min-h-[100dvh] w-full flex flex-col justify-center items-center relative px-4 overflow-hidden">
+                <!-- Geometric Orbital HUD -->
+                <div class="orbital-ring w-[120vw] h-[120vw] md:w-[60vw] md:h-[60vw] border-white/10 border-[1px]">
+                </div>
+                <div
+                    class="orbital-ring reverse w-[90vw] h-[90vw] md:w-[45vw] md:h-[45vw] border-white/10 border-[1px] border-t-transparent border-b-transparent">
+                </div>
+                <div
+                    class="orbital-ring w-[60vw] h-[60vw] md:w-[30vw] md:h-[30vw] border-white/20 border-dotted border-[2px]">
+                </div>
+
+                <h1 class="font-display font-bold text-[18vw] md:text-[14vw] leading-none tracking-tighter uppercase text-center hero-title perspective-text mt-10 z-10 text-transparent"
+                    style="-webkit-text-stroke: 1px rgba(255,255,255,0.9);">
+                    Stellar
+                </h1>
+                <p
+                    class="font-sans text-sm md:text-xl font-light mt-8 max-w-xl text-center text-gray opacity-0 hero-sub z-10 px-4 leading-relaxed tracking-wide">
+                    Mastering the intersection of <span class="font-bold text-white tracking-widest">DEEP SPACE</span>, celestial bodies, and <span class="italic font-normal text-white">infinite voids</span>. A <span class="font-bold text-white uppercase text-xs md:text-sm tracking-widest">premium cosmic</span> experience.
+                </p>
+                <div
+                    class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-0 hero-scroll z-10">
+                    <span class="text-[9px] uppercase tracking-[0.4em] mb-4 font-sans text-white/50">Initiate
+                        Descent</span>
+                    <div class="w-[1px] h-16 bg-white/10 relative overflow-hidden">
+                        <div
+                            class="w-full h-full bg-white absolute top-[-100%] animate-[scrollLine_2s_ease-in-out_infinite]">
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Text Reveal -->
+            <section
+                class="min-h-[100dvh] py-24 px-6 md:px-20 flex flex-col justify-center bg-white text-black relative overflow-hidden">
+                <div
+                    class="absolute inset-0 flex items-center justify-center opacity-[0.02] overflow-hidden pointer-events-none w-full">
+                    <h2 class="font-display text-[40vw] font-bold whitespace-nowrap parallax-bg-text tracking-tighter">
+                        COSMOS</h2>
+                </div>
+                <div class="w-full max-w-7xl mx-auto z-10 relative">
+                    <h2
+                        class="font-display text-4xl md:text-6xl lg:text-8xl font-bold leading-[1.05] tracking-tight text-black">
+                        <span class="font-light italic">I REDEFINE</span> THE BOUNDARIES OF
+                        <span class="text-enhancer-wrap text-black font-syncopate font-black">
+                            <span class="text-enhancer-base text-black">DEEP SPACE</span>
+                            <span class="text-enhancer-fill text-black" style="color: black !important;">DEEP
+                                SPACE</span>
+                        </span>
+                        <br><span class="font-thin tracking-[0.1em] text-black/80">THROUGH STARK STELLAR CONTRASTS</span> AND <span class="italic text-black">UNYIELDING</span>
+                        <span class="text-enhancer-wrap text-black font-black">
+                            <span class="text-enhancer-base text-black font-black">GRAVITY.</span>
+                            <span class="text-enhancer-fill text-black font-black" style="color: black !important;">GRAVITY.</span>
+                        </span>
+                    </h2>
+                    <p
+                        class="font-sans text-base md:text-3xl font-light mt-12 md:mt-20 max-w-3xl split-text-scroll leading-relaxed opacity-80">
+                        Drawing inspiration from <span class="font-bold italic">raw astrophysics</span> and celestial dynamics, the experience is designed to
+                        be felt. <span class="font-medium text-black">Every orbit has weight</span>, every void has purpose.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Marquee Section -->
+            <section class="py-12 md:py-20 overflow-hidden bg-black border-y border-white/5">
+                <div class="marquee-container flex">
+                    <div class="home-marquee-content font-display text-5xl md:text-8xl font-bold tracking-tighter uppercase whitespace-nowrap text-transparent opacity-60"
+                        style="-webkit-text-stroke: 1px white;">
+                        &nbsp;LIMITLESS UNIVERSE &nbsp;✦&nbsp; ZERO GRAVITY &nbsp;✦&nbsp; CELESTIAL MECHANICS
+                        &nbsp;✦&nbsp;
+                    </div>
+                    <div class="home-marquee-content font-display text-5xl md:text-8xl font-bold tracking-tighter uppercase whitespace-nowrap text-transparent opacity-60"
+                        style="-webkit-text-stroke: 1px white;">
+                        &nbsp;LIMITLESS UNIVERSE &nbsp;✦&nbsp; ZERO GRAVITY &nbsp;✦&nbsp; CELESTIAL MECHANICS
+                        &nbsp;✦&nbsp;
+                    </div>
+                </div>
+            </section>
+
+            <!-- Horizontal Scroll Portfolio -->
+            <section class="horizontal-section relative overflow-hidden bg-black min-h-[100dvh]">
+                <div class="horizontal-wrapper">
+                    <!-- Panel 1 -->
+                    <div class="horizontal-panel px-6 md:px-10 border-r border-white/5">
+                        <div class="w-full max-w-6xl flex flex-col md:flex-row items-center gap-12 md:gap-24">
+                            <div class="flex-1 text-center md:text-left">
+                                <h6 class="uppercase tracking-[0.3em] text-[10px] text-white/40 mb-4">Phase 01</h6>
+                                <h3 class="font-display text-5xl md:text-7xl font-bold mb-6 tracking-tight">GRAVITY</h3>
+                                <p
+                                    class="font-sans text-gray text-sm md:text-lg max-w-sm mx-auto md:mx-0 leading-relaxed">
+                                    Exploring the immense pull of supermassive black holes. Space warped strictly
+                                    through mass precision.</p>
+                            </div>
+                            <div
+                                class="flex-1 w-full max-w-md aspect-square border-[1px] border-white/20 flex items-center justify-center relative overflow-hidden group interactive mx-auto rounded-full p-4">
+                                <div
+                                    class="w-full h-full bg-gradient-to-tr from-white/5 to-white/40 transition-transform duration-1000 group-hover:scale-110 rounded-full blur-[4px]">
+                                </div>
+                                <div
+                                    class="absolute w-[40%] h-[40%] bg-black rounded-full shadow-[inset_0_0_20px_rgba(255,255,255,0.5)] transition-all duration-700 group-hover:scale-50">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Panel 2 -->
+                    <div class="horizontal-panel px-6 md:px-10 border-r border-white/5">
+                        <div class="w-full max-w-6xl flex flex-col-reverse md:flex-row items-center gap-12 md:gap-24">
+                            <div
+                                class="flex-1 w-full max-w-md aspect-square flex items-center justify-center relative overflow-hidden group interactive mx-auto">
+                                <div class="orbital-ring w-full h-full border-white/30 border-[1px]"></div>
+                                <div
+                                    class="orbital-ring reverse w-[70%] h-[70%] border-white/50 border-dashed border-[1px]">
+                                </div>
+                                <div
+                                    class="w-[20%] h-[20%] bg-white rounded-full transition-all duration-700 group-hover:scale-[3] blur-[1px]">
+                                </div>
+                            </div>
+                            <div class="flex-1 text-center md:text-right">
+                                <h6 class="uppercase tracking-[0.3em] text-[10px] text-white/40 mb-4">Phase 02</h6>
+                                <h3 class="font-display text-5xl md:text-7xl font-bold mb-6 text-black tracking-tight"
+                                    style="-webkit-text-stroke: 1px white;">VOID</h3>
+                                <p
+                                    class="font-sans text-gray text-sm md:text-lg max-w-sm mx-auto md:ml-auto leading-relaxed">
+                                    The expanse between light and nothingness. Galaxies stretched to their absolute
+                                    visual limit.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Panel 3 -->
+                    <div class="horizontal-panel px-6 md:px-10">
+                        <div class="w-full max-w-5xl text-center flex flex-col items-center">
+                            <div class="w-[1px] h-24 bg-white/20 mb-8"></div>
+                            <h3 class="font-display text-[15vw] md:text-[10vw] font-bold leading-none tracking-tighter">
+                                EXPANSE</h3>
+                            <div class="w-[1px] h-24 bg-white/20 mt-8 mb-8"></div>
+                            <p class="font-sans text-sm md:text-xl tracking-[0.3em] uppercase text-white/60">Size is
+                                relativity. The universe is absolute.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Morphing Shape Section -->
+            <section
+                class="min-h-[100dvh] py-20 flex flex-col items-center justify-center relative overflow-hidden px-4 border-t border-white/5">
+                <div
+                    class="absolute inset-0 z-0 flex items-center justify-center opacity-[0.05] md:opacity-[0.08] pointer-events-none">
+                    <h2 class="font-display text-[25vw] md:text-[20vw] font-bold tracking-tighter text-transparent"
+                        style="-webkit-text-stroke: 2px white;">ECLIPSE</h2>
+                </div>
+                <div class="z-10 text-center mb-16">
+                    <h3 class="font-display text-2xl md:text-5xl font-bold tracking-tight">CELESTIAL ALIGNMENT</h3>
+                    <p
+                        class="font-sans text-gray mt-4 max-w-lg mx-auto text-xs md:text-sm tracking-widest uppercase opacity-50">
+                        Scroll to witness planetary shift.</p>
+                </div>
+                <!-- Advanced Geometric Morphing -->
+                <div
+                    class="relative flex items-center justify-center w-[250px] h-[250px] md:w-[400px] md:h-[400px] interactive">
+                    <div class="morph-shape-outer absolute inset-0 border-[1px] border-white/20" id="morph-outer"></div>
+                    <div class="morph-shape-inner absolute w-1/2 h-1/2 border-[1px] border-white/50" id="morph-inner">
+                    </div>
+                    <div class="absolute w-[2px] h-full bg-white/10"></div>
+                    <div class="absolute h-[2px] w-full bg-white/10"></div>
+                </div>
+            </section>
+
+            <!-- Footer for Home -->
+            <footer
+                class="min-h-[100dvh] bg-white text-black flex flex-col justify-between p-6 md:p-16 relative overflow-hidden">
+                <div class="flex-1 flex flex-col justify-center items-center text-center z-10 w-full h-full py-10">
+                    <h2 class="font-display text-[14vw] md:text-[11vw] font-bold leading-none tracking-tighter inline-block hover:-skew-x-[6deg] hover:scale-105 origin-bottom transition-all duration-500 ease-out cursor-pointer interactive"
+                        style="will-change: transform;">
+                        THANK YOU
+                    </h2>
+                    <p
+                        class="font-sans text-sm md:text-lg tracking-[0.3em] md:tracking-[0.5em] uppercase mt-10 font-medium opacity-60">
+                        For experiencing deep space</p>
+                </div>
+                <div
+                    class="flex flex-col md:flex-row justify-between items-center md:items-end w-full border-t border-black/10 pt-10 z-10 pb-6 gap-8">
+                    <div
+                        class="font-sans text-[10px] md:text-xs tracking-[0.2em] uppercase text-center md:text-left text-black/60">
+                        <p>© 2026 ROHIT</p>
+                        <p class="mt-2 text-black/40">DESIGNED BY STELLAR STUDIO</p>
+                    </div>
+                    <div class="flex gap-10 font-display font-bold text-xl md:text-2xl">
+                        <a href="https://twitter.com" target="_blank"
+                            class="hover:underline interactive hover:opacity-50 transition-opacity">TW</a>
+                        <a href="https://instagram.com" target="_blank"
+                            class="hover:underline interactive hover:opacity-50 transition-opacity">IG</a>
+                        <a href="https://linkedin.com" target="_blank"
+                            class="hover:underline interactive hover:opacity-50 transition-opacity">LI</a>
+                    </div>
+                </div>
+            </footer>
+        </section>
+
+        <!-- ===== PAGE 2: COSMOLOGY / PHILOSOPHY ===== -->
+        <section id="page-about" class="page min-h-[100dvh] bg-black">
+            <div
+                class="w-full flex-1 pt-40 pb-20 px-6 md:px-20 max-w-7xl mx-auto flex flex-col justify-center relative z-10">
+                <header class="mb-20 md:mb-32">
+                    <h1
+                        class="font-display text-[13vw] md:text-[9vw] font-bold leading-none tracking-tighter uppercase mb-8">
+                        Cosmology</h1>
+                    <div class="w-full h-[1px] bg-gradient-to-r from-white/30 to-transparent"></div>
+                </header>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24">
+                    <div>
+                        <h2 class="font-display text-2xl md:text-4xl mb-8 leading-tight tracking-tight">THE MANIFESTO OF
+                            INFINITE SPACE</h2>
+                        <div class="font-sans text-sm md:text-lg text-gray space-y-8 font-light leading-relaxed">
+                            <p><span class="font-bold text-white tracking-widest uppercase text-xs">I believe</span> in the power of the infinite. <i class="text-white/80">Light. Dark. Matter. Void.</i> In a universe
+                                saturated with noise, <span class="font-medium text-white">I choose</span> the stark reality of absolute expanse.</p>
+                            <p>Galaxies are not merely vessels for stars; they are <span class="font-syncopate font-bold text-white tracking-widest text-xs">architecture</span>. Every nebula, every
+                                pulsar, and every orbit is a structural element holding the cosmic space together.</p>
+                            <p>Through modern web capabilities, <span class="font-medium text-white italic">I breathe life</span> into static astrophysics. <span class="font-medium text-white">I animate</span> to
+                                emulate gravity, emphasize scale, and establish orbital hierarchy.</p>
+                        </div>
+                        <div
+                            class="mt-16 md:mt-24 w-full aspect-video bg-white/5 relative overflow-hidden group interactive flex justify-center items-center border border-white/10 rounded-sm">
+                            <div
+                                class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIi8+PC9zdmc+')] mix-blend-overlay opacity-50 group-hover:scale-110 transition-transform duration-1000">
+                            </div>
+                            <h3
+                                class="font-display text-xl md:text-2xl tracking-[0.5em] group-hover:scale-105 transition-transform duration-700 z-10 text-white/80">
+                                UNIVERSE</h3>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-10 md:gap-16">
+                        <div
+                            class="w-full aspect-[4/5] bg-white text-black p-8 md:p-12 flex flex-col justify-between interactive hover:bg-gray transition-colors duration-500 shadow-[0_0_40px_rgba(255,255,255,0.05)]">
+                            <h3 class="font-display text-5xl md:text-7xl font-bold tracking-tighter opacity-20">01.</h3>
+                            <p class="font-sans text-xl md:text-3xl font-medium uppercase leading-tight tracking-tight">
+                                Embrace the void so that the stars may shine.</p>
+                        </div>
+                        <div
+                            class="w-full aspect-[4/5] border border-white/20 p-8 md:p-12 flex flex-col justify-between interactive hover:bg-white hover:text-black transition-all duration-700 group">
+                            <h3
+                                class="font-display text-5xl md:text-7xl font-bold tracking-tighter text-white/20 group-hover:text-black/20 transition-colors">
+                                02.</h3>
+                            <p
+                                class="font-sans text-xl md:text-3xl font-medium uppercase leading-tight tracking-tight text-white group-hover:text-black transition-colors">
+                                Orbits must obey the laws of gravity, even when warping them.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Footer -->
+            <footer
+                class="mt-20 border-t border-white/10 py-24 flex flex-col items-center justify-center min-h-[40dvh] relative z-10">
+                <h2 class="font-display text-4xl md:text-[6vw] font-bold tracking-tighter mb-6 text-center">THANK YOU
+                </h2>
+                <p class="font-sans text-[10px] md:text-xs tracking-[0.3em] uppercase text-gray mb-8">End of Cosmology
+                </p>
+                <div class="w-[1px] h-12 bg-white/20 mb-8"></div>
+                <p class="font-sans text-[9px] md:text-[10px] tracking-widest uppercase text-gray/40">© 2026 ROHIT</p>
+            </footer>
+        </section>
+
+        <!-- ===== PAGE 3: CONNECT / COMMS ===== -->
+        <section id="page-connect" class="page min-h-[100dvh] bg-black">
+            <div
+                class="w-full max-w-6xl mx-auto flex-1 flex flex-col justify-center pt-40 pb-20 px-6 md:px-20 min-h-[100dvh] relative z-10">
+                <div class="flex items-center gap-6 mb-12 md:mb-20">
+                    <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+                    <p class="font-sans text-xs md:text-sm uppercase tracking-[0.3em] text-white/50">Secure Comms Link
+                        Active</p>
+                </div>
+
+                <ul class="flex flex-col border-t border-white/10">
+                    <li class="border-b border-white/10 group">
+                        <a href="https://twitter.com" target="_blank"
+                            class="flex justify-between items-center interactive w-full py-8 md:py-12">
+                            <span
+                                class="font-display text-3xl md:text-[6vw] font-bold tracking-tighter uppercase group-hover:translate-x-6 transition-transform duration-500">Twitter
+                                <span class="text-white/20 text-lg md:text-3xl">(Voyager)</span></span>
+                            <span
+                                class="font-sans text-xl md:text-3xl opacity-0 group-hover:opacity-100 -translate-x-10 group-hover:translate-x-0 transition-all duration-500">↗</span>
+                        </a>
+                    </li>
+                    <li class="border-b border-white/10 group">
+                        <a href="https://instagram.com" target="_blank"
+                            class="flex justify-between items-center interactive w-full py-8 md:py-12">
+                            <span
+                                class="font-display text-3xl md:text-[6vw] font-bold tracking-tighter uppercase group-hover:translate-x-6 transition-transform duration-500">Instagram
+                                <span class="text-white/20 text-lg md:text-3xl">(Hubble)</span></span>
+                            <span
+                                class="font-sans text-xl md:text-3xl opacity-0 group-hover:opacity-100 -translate-x-10 group-hover:translate-x-0 transition-all duration-500">↗</span>
+                        </a>
+                    </li>
+                    <li class="border-b border-white/10 group">
+                        <a href="https://behance.net" target="_blank"
+                            class="flex justify-between items-center interactive w-full py-8 md:py-12">
+                            <span
+                                class="font-display text-3xl md:text-[6vw] font-bold tracking-tighter uppercase group-hover:translate-x-6 transition-transform duration-500">Behance
+                                <span class="text-white/20 text-lg md:text-3xl">(Webb)</span></span>
+                            <span
+                                class="font-sans text-xl md:text-3xl opacity-0 group-hover:opacity-100 -translate-x-10 group-hover:translate-x-0 transition-all duration-500">↗</span>
+                        </a>
+                    </li>
+                    <li class="border-b border-white/10 group cursor-pointer"
+                        onclick="triggerToast('Opening Encryption Channel...')">
+                        <div class="flex justify-between items-center interactive w-full py-8 md:py-12">
+                            <span
+                                class="font-display text-3xl md:text-[6vw] font-bold tracking-tighter uppercase group-hover:translate-x-6 transition-transform duration-500 text-transparent"
+                                style="-webkit-text-stroke: 1px rgba(255,255,255,0.8);">Direct Relay</span>
+                            <span
+                                class="font-sans text-xl md:text-3xl opacity-0 group-hover:opacity-100 -translate-x-10 group-hover:translate-x-0 transition-all duration-500 text-white">↗</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <!-- Footer -->
+            <footer class="py-16 flex flex-col items-center justify-center relative z-10">
+                <p class="font-sans text-[9px] md:text-[10px] tracking-[0.4em] uppercase text-white/30">End Transmission
+                    / © 2026</p>
+            </footer>
+        </section>
+
+        <!-- ===== PAGE 4: ARCHIVE (GSAP 2 Integration) ===== -->
+        <section id="page-archive" class="page bg-pureblack text-purewhite font-syncopate">
+
+            <!-- Hero -->
+            <section id="archive-hero"
+                class="archive-section px-6 md:px-20 min-h-[100dvh] w-full flex flex-col justify-center items-center">
+                <!-- Archive Orbital Deco -->
+                <div
+                    class="absolute w-[2px] h-[100vh] bg-gradient-to-b from-transparent via-white/10 to-transparent pointer-events-none">
+                </div>
+                <div
+                    class="absolute h-[2px] w-[100vw] bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none">
+                </div>
+
+                <div class="flex flex-col items-center w-full relative text-center z-10">
+                    <span class="big-char font-syncopate left-[-2%] top-[-10%] md:top-[0%] opacity-[0.03]">S</span>
+                    <div class="text-reveal-container">
+                        <h2
+                            class="uppercase tracking-[0.4em] md:tracking-[0.8em] text-[8px] md:text-[10px] mb-6 opacity-60 archive-hero-sub font-sans">
+                            Evolution of the Cosmos</h2>
+                    </div>
+                    <div class="text-reveal-container perspective-text mt-2 md:mt-4 w-full">
+                        <h1
+                            class="font-syncopate text-6xl md:text-[12vw] font-black leading-[1] md:leading-[0.85] archive-hero-title whitespace-normal md:whitespace-nowrap break-words px-2 tracking-tighter">
+                            STELLAR
+                        </h1>
+                    </div>
+                    <div class="flex flex-col items-center w-full mt-10 md:mt-16 gap-8">
+                        <p
+                            class="max-w-2xl text-xs md:text-base opacity-70 leading-relaxed archive-hero-p text-center pb-8 font-sans font-light px-4">
+                            A multi-dimensional archive exploring the intersection of vast galaxies and fluid kinetic
+                            forces. Designed by <strong>Rohit</strong> to challenge the static boundaries.
+                        </p>
+                    </div>
+                </div>
+                <!-- Scroll indicator -->
+                <div
+                    class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-0 archive-hero-scroll z-10">
+                    <span class="text-[8px] md:text-[9px] tracking-[0.4em] opacity-40 mb-5 font-syncopate">SCROLL
+                        SEQUENCE</span>
+                    <div class="w-[1px] h-12 md:h-16 bg-white/20 relative overflow-hidden">
+                        <div
+                            class="w-full h-full bg-white absolute top-[-100%] animate-[scrollLine_1.5s_ease-in-out_infinite]">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- System Details -->
+            <section id="archive-about"
+                class="archive-section bg-purewhite text-pureblack min-h-[100dvh] py-24 md:py-40 px-6 md:px-20 z-10">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 md:gap-32 items-center max-w-7xl mx-auto w-full">
+                    <div class="morph-container relative flex justify-center order-2 lg:order-1 mt-10 lg:mt-0">
+                        <div
+                            class="archive-morph-box w-64 h-64 md:w-[350px] md:h-[350px] border-black/10 border-[1px] flex items-center justify-center p-6 md:p-10 rounded-none transform rotate-45">
+                            <div
+                                class="w-full h-full border border-black/20 flex items-center justify-center transform -rotate-45">
+                                <span class="font-syncopate text-6xl md:text-8xl font-black opacity-[0.05]">01</span>
+                            </div>
+                        </div>
+                        <div
+                            class="absolute inset-0 flex items-center justify-center font-bold text-2xl md:text-4xl font-syncopate tracking-widest pointer-events-none mix-blend-difference text-white">
+                            WARP
+                        </div>
+                    </div>
+                    <div class="max-w-xl order-1 lg:order-2 text-center lg:text-left">
+                        <h6
+                            class="uppercase tracking-[0.4em] text-[9px] md:text-[10px] mb-6 font-bold opacity-40 font-sans">
+                            The Mechanics</h6>
+                        <h3 class="font-syncopate text-3xl md:text-5xl font-bold mb-8 md:mb-10 leading-tight">
+                            <span class="text-enhancer-wrap text-black">
+                                <span class="text-enhancer-base text-black">Gravitational</span>
+                                <span class="text-enhancer-fill text-black archive-enhancer"
+                                    style="color: black !important;">Gravitational</span>
+                            </span> <br class="hidden md:block">Framework
+                        </h3>
+                        <p
+                            class="text-sm md:text-xl leading-relaxed mb-10 md:mb-12 opacity-80 font-light archive-split-text font-sans mx-auto lg:mx-0 max-w-md lg:max-w-none">
+                            Every element within the <span class="font-bold italic text-white/90">Stellar environment</span> is subject to gravitational pull and spatial
+                            distortion. <span class="font-medium text-white uppercase text-[10px] tracking-widest">I utilize</span> advanced rendering to emulate complex astrophysics in real-time.
+                        </p>
+                        <div class="flex flex-wrap gap-4 justify-center lg:justify-start">
+                            <button
+                                class="magnetic-btn interactive border-black hover:bg-black hover:text-white uppercase text-[9px] tracking-[0.2em] font-bold font-sans"
+                                onclick="triggerToast('Accessing Process Logs...')">
+                                System Process
+                            </button>
+                            <button
+                                class="px-6 md:px-8 py-4 uppercase text-[9px] tracking-[0.2em] font-bold hover:underline interactive cursor-pointer font-sans"
+                                onclick="gsap.to(window, {scrollTo: {y: '#archive-gallery'}, duration: 1})">
+                                View Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Horizontal Gallery -->
+            <section id="archive-gallery"
+                class="archive-horizontal-trigger overflow-hidden min-h-[100dvh] relative bg-pureblack">
+                <!-- Geometric background grid for archive -->
+                <div
+                    class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] pointer-events-none">
+                </div>
+
+                <div class="archive-horizontal-container flex">
+                    <div class="archive-panel px-6 md:px-20 border-r border-white/5 relative overflow-hidden">
+                        <!-- Orbit Geometric Design -->
+                        <div class="absolute w-[50vh] h-[50vh] border-[1px] border-white/10 rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none animate-[spin_50s_linear_infinite]">
+                            <div class="absolute top-0 left-1/2 w-2 h-2 bg-white rounded-full -translate-x-1/2 -translate-y-1/2 blur-[2px]"></div>
+                        </div>
+                        <div class="absolute w-[80vh] h-[80vh] border-[1px] border-dashed border-white/10 rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+
+                        <span class="big-char font-syncopate top-[10%]">A</span>
+                        <h1 class="font-syncopate text-[14vw] md:text-[12vw] velocity-stroke font-black interactive">
+                            ORBIT</h1>
+                        <p
+                            class="mt-8 uppercase tracking-[0.5em] text-[9px] md:text-[10px] opacity-60 font-sans text-center">
+                            Variable planetary transitions</p>
+                    </div>
+                    <div class="archive-panel px-6 md:px-20 border-r border-white/5 relative overflow-hidden">
+                        <!-- Nebula Design -->
+                        <div class="absolute w-[60vh] h-[60vh] bg-gradient-to-tr from-white/10 to-transparent blur-[80px] rounded-full top-[10%] left-[20%] pointer-events-none"></div>
+                        <div class="absolute w-[40vh] h-[40vh] bg-gradient-to-bl from-white/5 to-transparent blur-[60px] rounded-full bottom-[10%] right-[10%] pointer-events-none"></div>
+
+                        <span class="big-char font-syncopate top-[10%]">B</span>
+                        <h1 class="font-syncopate text-[14vw] md:text-[12vw] font-black interactive text-center">NEBULA
+                        </h1>
+                        <p
+                            class="mt-8 uppercase tracking-[0.5em] text-[9px] md:text-[10px] opacity-60 font-sans text-center">
+                            Z-axis depth manipulation</p>
+                    </div>
+                    <div class="archive-panel px-6 md:px-20 border-r border-white/5 relative overflow-hidden">
+                        <!-- Quasar Design -->
+                        <div class="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(255,255,255,0.02)_10px,rgba(255,255,255,0.02)_20px)] pointer-events-none"></div>
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1px] h-[150vh] bg-gradient-to-b from-transparent via-white/40 to-transparent shadow-[0_0_20px_rgba(255,255,255,0.5)] transform -rotate-[30deg]"></div>
+
+                        <span class="big-char font-syncopate top-[10%]">C</span>
+                        <h1 class="font-syncopate text-[14vw] md:text-[12vw] velocity-stroke font-black interactive">
+                            QUASAR</h1>
+                        <p
+                            class="mt-8 uppercase tracking-[0.5em] text-[9px] md:text-[10px] opacity-60 font-sans text-center">
+                            Stellar emission architecture</p>
+                    </div>
+                    <div class="archive-panel px-6 md:px-20 border-r border-white/5 relative overflow-hidden">
+                        <!-- Horizon Design -->
+                        <div class="absolute right-[-10vw] bottom-[-10vw] w-[80vw] h-[80vw] border-t-[2px] border-l-[2px] border-white/20 rounded-tl-full opacity-50 pointer-events-none"></div>
+                        <div class="absolute right-[10vw] bottom-[10vw] w-[40vw] h-[40vw] border-t border-l border-white/10 rounded-tl-full opacity-30 pointer-events-none"></div>
+
+                        <span class="big-char font-syncopate top-[10%]">D</span>
+                        <h1 class="font-syncopate text-[14vw] md:text-[12vw] font-black interactive text-center">HORIZON
+                        </h1>
+                        <p
+                            class="mt-8 uppercase tracking-[0.5em] text-[9px] md:text-[10px] opacity-60 font-sans text-center">
+                            Beyond the event horizon</p>
+                    </div>
+                    <div class="archive-panel px-6 md:px-20 bg-white text-black">
+                        <h1
+                            class="font-syncopate text-[8vw] md:text-[6vw] font-black text-center leading-tight tracking-tighter">
+                            END OF<br>CONSTELLATION</h1>
+                        <button
+                            class="magnetic-btn interactive border-black mt-14 text-[9px] tracking-[0.2em] font-bold font-sans"
+                            onclick="gsap.to(window, {duration: 1.5, scrollTo: {y: '#archive-hero'}, ease: 'power4.inOut'})">RESTART
+                            JOURNEY</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Social Network / RELAY -->
+            <section id="archive-social"
+                class="archive-section min-h-[100dvh] py-24 md:py-40 px-6 md:px-20 relative bg-pureblack">
+                <div
+                    class="absolute top-0 left-0 w-full h-full flex items-center justify-center pointer-events-none overflow-hidden">
+                    <div
+                        class="text-[35vw] md:text-[25vw] font-black opacity-[0.02] font-syncopate whitespace-nowrap archive-marquee-bg">
+                        RELAY NETWORK</div>
+                </div>
+                <div class="relative z-10 w-full max-w-7xl mx-auto flex flex-col justify-center h-full">
+                    <h2
+                        class="font-syncopate text-3xl md:text-6xl font-bold mb-16 md:mb-24 text-center tracking-tighter leading-tight">
+                        Connection<br><span class="opacity-20">Nodes</span></h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-[1px] bg-white/10 border border-white/10">
+                        <a href="https://instagram.com" target="_blank"
+                            class="group py-20 px-6 md:p-24 bg-black flex flex-col items-center justify-center gap-8 cursor-pointer interactive relative overflow-hidden">
+                            <div
+                                class="absolute inset-0 bg-white/5 transform scale-y-0 origin-bottom group-hover:scale-y-100 transition-transform duration-500 ease-out">
+                            </div>
+                            <span
+                                class="font-syncopate text-xl md:text-2xl group-hover:scale-110 transition-transform duration-500 ease-out relative z-10"
+                                style="will-change: transform;">Hubble</span>
+                            <span
+                                class="text-[9px] tracking-[0.4em] opacity-40 group-hover:opacity-100 transition-opacity font-sans text-center relative z-10">001
+                                / TRANSMISSION</span>
+                        </a>
+                        <a href="https://twitter.com" target="_blank"
+                            class="group py-20 px-6 md:p-24 bg-black flex flex-col items-center justify-center gap-8 cursor-pointer interactive relative overflow-hidden">
+                            <div
+                                class="absolute inset-0 bg-white/5 transform scale-y-0 origin-bottom group-hover:scale-y-100 transition-transform duration-500 ease-out">
+                            </div>
+                            <span
+                                class="font-syncopate text-xl md:text-2xl group-hover:scale-110 transition-transform duration-500 ease-out relative z-10"
+                                style="will-change: transform;">Voyager</span>
+                            <span
+                                class="text-[9px] tracking-[0.4em] opacity-40 group-hover:opacity-100 transition-opacity font-sans text-center relative z-10">002
+                                / FREQUENCY</span>
+                        </a>
+                        <a href="https://behance.net" target="_blank"
+                            class="group py-20 px-6 md:p-24 bg-black flex flex-col items-center justify-center gap-8 cursor-pointer interactive relative overflow-hidden">
+                            <div
+                                class="absolute inset-0 bg-white/5 transform scale-y-0 origin-bottom group-hover:scale-y-100 transition-transform duration-500 ease-out">
+                            </div>
+                            <span
+                                class="font-syncopate text-xl md:text-2xl group-hover:scale-110 transition-transform duration-500 ease-out relative z-10"
+                                style="will-change: transform;">Webb</span>
+                            <span
+                                class="text-[9px] tracking-[0.4em] opacity-40 group-hover:opacity-100 transition-opacity font-sans text-center relative z-10">003
+                                / LOGS</span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Footer -->
+            <section
+                class="archive-section bg-purewhite text-pureblack min-h-[100dvh] justify-between pt-32 pb-12 px-6 md:px-20">
+                <div class="flex-1 flex flex-col justify-center items-center text-center w-full mt-10">
+                    <div class="overflow-hidden w-full px-2">
+                        <h1
+                            class="font-syncopate text-[16vw] font-black leading-none mb-6 archive-thank-you text-center break-words md:whitespace-nowrap tracking-tighter">
+                            THANKS
+                        </h1>
+                    </div>
+                    <p
+                        class="font-syncopate tracking-[0.5em] md:tracking-[1em] text-[7px] md:text-[9px] font-bold opacity-40 mt-6">
+                        CREATED BY ROHIT — 2026</p>
+                </div>
+                <div
+                    class="flex flex-col md:flex-row justify-between items-center md:items-end w-full border-t border-black/10 pt-10 mt-16 gap-10 md:gap-8">
+                    <div class="text-center md:text-left font-sans">
+                        <p class="font-black uppercase text-[9px] tracking-widest mb-3">Creative Direction</p>
+                        <p class="opacity-60 text-[9px] tracking-widest uppercase">Rohit — Stellar Studio</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row items-center gap-4 md:gap-6 font-sans">
+                        <button onclick="switchPage('page-home', 'main')"
+                            class="magnetic-btn interactive border-black text-[9px] tracking-[0.2em] font-bold flex items-center gap-2">
+                            Return Home <span>↗</span>
+                        </button>
+                        <button
+                            onclick="gsap.to(window, {duration: 1.5, scrollTo: {y: '#archive-hero'}, ease: 'power4.inOut'})"
+                            class="magnetic-btn interactive border-black text-[9px] tracking-[0.2em] font-bold cursor-pointer">
+                            Top
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+        </section>
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/TextPlugin.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.27/bundled/lenis.min.js"></script>
+
+    <script>
+        // Setup GSAP
+        gsap.registerPlugin(ScrollTrigger, TextPlugin, ScrollToPlugin);
+
+        // --- Smooth Scrolling Setup (Lenis) ---
+        const lenis = new Lenis({
+            duration: 1.5,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            direction: 'vertical',
+            gestureDirection: 'vertical',
+            smooth: true,
+            mouseMultiplier: 1,
+            smoothTouch: false,
+            touchMultiplier: 2,
+            infinite: false,
+        });
+
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+
+        // Sync GSAP ScrollTrigger with Lenis
+        lenis.on('scroll', ScrollTrigger.update);
+        gsap.ticker.add((time) => { lenis.raf(time * 1000) });
+        gsap.ticker.lagSmoothing(0);
+
+        // --- Scroll Progress Bar ---
+        gsap.to(".scroll-progress", {
+            width: "100%", ease: "none",
+            scrollTrigger: { trigger: "body", start: "top top", end: "bottom bottom", scrub: 0.1 }
+        });
+
+        // --- Premium Cursor Logic ---
+        const cursorDot = document.querySelector('.cursor-dot');
+        const cursorOutline = document.querySelector('.cursor-outline');
+        let cursorX = window.innerWidth / 2, cursorY = window.innerHeight / 2;
+        let outlineX = cursorX, outlineY = cursorY;
+
+        window.addEventListener('mousemove', (e) => {
+            cursorX = e.clientX;
+            cursorY = e.clientY;
+            cursorDot.style.left = `${cursorX}px`;
+            cursorDot.style.top = `${cursorY}px`;
+        });
+
+        // Render loop for smooth cursor outline following
+        gsap.ticker.add(() => {
+            outlineX += (cursorX - outlineX) * 0.15;
+            outlineY += (cursorY - outlineY) * 0.15;
+            cursorOutline.style.transform = `translate(calc(-50% + ${outlineX}px), calc(-50% + ${outlineY}px))`;
+        });
+
+        const initInteractiveCursors = () => {
+            document.querySelectorAll('.interactive').forEach(el => {
+                el.removeEventListener('mouseenter', addCursorHover);
+                el.removeEventListener('mouseleave', removeCursorHover);
+                el.addEventListener('mouseenter', addCursorHover);
+                el.addEventListener('mouseleave', removeCursorHover);
+            });
+        };
+        const addCursorHover = () => document.body.classList.add('cursor-hover');
+        const removeCursorHover = () => document.body.classList.remove('cursor-hover');
+
+        // Magnetic Buttons Logic - Moves button AND influences cursor
+        const initMagneticBtns = () => {
+            document.querySelectorAll(".magnetic-btn").forEach(btn => {
+                btn.addEventListener("mousemove", (e) => {
+                    const rect = btn.getBoundingClientRect();
+                    const x = e.clientX - rect.left - rect.width / 2;
+                    const y = e.clientY - rect.top - rect.height / 2;
+                    gsap.to(btn, { x: x * 0.3, y: y * 0.3, duration: 0.4, ease: "power2.out" });
+                });
+                btn.addEventListener("mouseleave", () => {
+                    gsap.to(btn, { x: 0, y: 0, duration: 0.8, ease: "elastic.out(1, 0.3)" });
+                });
+            });
+        };
+
+        // --- Notification Toast System ---
+        window.triggerToast = function (message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerText = message;
+            container.appendChild(toast);
+
+            // Force reflow
+            void toast.offsetWidth;
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        };
+
+        // --- Premium Text Splitting Utility (with blur) ---
+        function splitContent(node) {
+            const fragment = document.createDocumentFragment();
+            Array.from(node.childNodes).forEach(child => {
+                if (child.nodeType === 3) { // Text Node
+                    const text = child.textContent;
+                    // We must preserve exact spacing
+                    const wordsTokens = text.split(/(\s+)/);
+                    wordsTokens.forEach(token => {
+                        if (token.trim() === '') {
+                            fragment.appendChild(document.createTextNode(token));
+                        } else {
+                            const wordSpan = document.createElement('span');
+                            wordSpan.className = 'word-mask';
+                            token.split('').forEach(char => {
+                                const charSpan = document.createElement('span');
+                                charSpan.className = 'char translate-y-[120%] rotate-[10deg] opacity-0';
+                                charSpan.style.filter = "blur(8px)";
+                                charSpan.innerHTML = char;
+                                wordSpan.appendChild(charSpan);
+                            });
+                            fragment.appendChild(wordSpan);
+                        }
+                    });
+                } else if (child.nodeType === 1) { // Element Node
+                    const clone = child.cloneNode(false);
+                    clone.appendChild(splitContent(child));
+                    fragment.appendChild(clone);
+                }
+            });
+            return fragment;
+        }
+
+        function splitText(selector) {
+            document.querySelectorAll(selector).forEach(el => {
+                if (el.hasAttribute('data-split')) return;
+                el.setAttribute('data-split', 'true');
+                const newContent = splitContent(el);
+                el.innerHTML = '';
+                el.appendChild(newContent);
+            });
+        }
+
+        // --- Active Tweens Tracker ---
+        let activeTweens = [];
+
+        function clearActiveTweens() {
+            activeTweens.forEach(t => t.kill());
+            activeTweens = [];
+            ScrollTrigger.getAll().forEach(t => t.revert());
+        }
+
+        // --- Prepare Text for Animating so it doesn't flash ---
+        document.addEventListener("DOMContentLoaded", () => {
+            splitText('#page-home .hero-title');
+            splitText('#page-home .split-text-scroll');
+            splitText('.archive-hero-title');
+            splitText('#page-archive .archive-split-text');
+        });
+
+        // --- Animations Initialization per Page ---
+
+        function initHomeAnimations() {
+            gsap.to('#page-home .hero-title .char', {
+                y: 0, rotationZ: 0, opacity: 1, filter: "blur(0px)", duration: 1.4, stagger: 0.04, ease: "power4.out"
+            });
+            gsap.to('#page-home .hero-sub, #page-home .hero-scroll', {
+                opacity: 1, y: 0, duration: 1.2, delay: 0.6, ease: "power3.out"
+            });
+
+            // Home Marquee
+            const marquee = gsap.to('.home-marquee-content', {
+                xPercent: -100, repeat: -1, duration: 20, ease: "none",
+            });
+            activeTweens.push(marquee);
+
+            // Refokus Enhancer Text
+            gsap.utils.toArray('#page-home .text-enhancer-fill').forEach(el => {
+                gsap.to(el, {
+                    clipPath: "inset(0 0% 0 0)", ease: "none",
+                    scrollTrigger: { trigger: el.parentElement, start: "top 80%", end: "bottom 40%", scrub: 1 }
+                });
+            });
+
+            // Parallax Background text
+            gsap.to('#page-home .parallax-bg-text', {
+                xPercent: -20, ease: "none",
+                scrollTrigger: { trigger: '#page-home .parallax-bg-text', start: "top bottom", end: "bottom top", scrub: true }
+            });
+
+            // Reveal Text (with blur)
+            gsap.to('#page-home .split-text-scroll .char', {
+                y: 0, rotationZ: 0, opacity: 1, filter: "blur(0px)", stagger: 0.01, duration: 0.8, ease: "power3.out",
+                scrollTrigger: { trigger: '#page-home .split-text-scroll', start: "top 85%", toggleActions: "play none none reverse" }
+            });
+
+            // Horizontal Scroll fixing disappearing elements
+            const hWrapper = document.querySelector('#page-home .horizontal-wrapper');
+            const hPanels = gsap.utils.toArray('#page-home .horizontal-panel');
+            if (hWrapper && hPanels.length > 0) {
+                gsap.to(hWrapper, {
+                    x: () => -(hWrapper.scrollWidth - window.innerWidth), ease: "none",
+                    scrollTrigger: {
+                        trigger: "#page-home .horizontal-section", pin: true, pinSpacing: true, scrub: 1.5, anticipatePin: 1,
+                        end: () => "+=" + (hWrapper.scrollWidth)
+                    }
+                });
+            }
+
+            // Advanced Geometric Morph
+            gsap.to('#morph-outer', {
+                borderRadius: "50%", scale: 1.2, rotate: 180,
+                scrollTrigger: { trigger: "#morph-outer", start: "top 80%", end: "bottom 20%", scrub: 1 }
+            });
+            gsap.to('#morph-inner', {
+                borderRadius: "50%", scale: 0.5, rotate: -180, backgroundColor: "rgba(255,255,255,0.1)",
+                scrollTrigger: { trigger: "#morph-outer", start: "top 80%", end: "bottom 20%", scrub: 1 }
+            });
+        }
+
+        function initAboutAnimations() {
+            gsap.from('#page-about h1', { y: 60, opacity: 0, duration: 1.2, ease: "power4.out", delay: 0.2 });
+            gsap.from('#page-about p', { y: 20, opacity: 0, duration: 1, stagger: 0.15, ease: "power3.out", delay: 0.4 });
+        }
+
+        function initConnectAnimations() {
+            gsap.from('#page-connect li', { x: -40, opacity: 0, duration: 0.8, stagger: 0.1, ease: "power3.out", delay: 0.3 });
+        }
+
+        function initArchiveAnimations() {
+            gsap.to('.archive-hero-title .char', {
+                y: 0, rotationZ: 0, opacity: 1, filter: "blur(0px)", duration: 1.4, stagger: 0.05, ease: "power4.out"
+            });
+            gsap.fromTo(".archive-hero-sub, .archive-hero-p", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 1, stagger: 0.2, ease: "power3.out", delay: 0.3 });
+            gsap.to(".archive-hero-scroll", { opacity: 1, duration: 0.8, ease: "power2.out", delay: 0.6 });
+
+            // Morph Box
+            gsap.to(".archive-morph-box", {
+                rotate: 135, borderRadius: "50%", scale: 0.8,
+                scrollTrigger: { trigger: "#archive-about", start: "top center", end: "bottom center", scrub: 1 }
+            });
+
+            // Text split scroll
+            gsap.to('#page-archive .archive-split-text .char', {
+                y: 0, rotationZ: 0, opacity: 1, filter: "blur(0px)", stagger: 0.015, duration: 1.2, ease: "expo.out",
+                scrollTrigger: { trigger: '#page-archive .archive-split-text', start: "top 85%", toggleActions: "play none none reverse" }
+            });
+
+            // Enhancer
+            gsap.utils.toArray('#page-archive .archive-enhancer').forEach(el => {
+                gsap.to(el, {
+                    clipPath: "inset(0 0% 0 0)", ease: "none",
+                    scrollTrigger: { trigger: el.parentElement, start: "top 80%", end: "bottom 50%", scrub: 1 }
+                });
+            });
+
+            // Horizontal Gallery Archive
+            const aContainer = document.querySelector(".archive-horizontal-container");
+            const aPanels = gsap.utils.toArray("#page-archive .archive-panel");
+            if (aContainer && aPanels.length > 0) {
+                gsap.to(aContainer, {
+                    x: () => -(aContainer.scrollWidth - window.innerWidth), ease: "none",
+                    scrollTrigger: {
+                        trigger: ".archive-horizontal-trigger",
+                        pin: true,
+                        pinSpacing: true,
+                        anticipatePin: 1,
+                        scrub: 1.5,
+                        snap: 1 / (aPanels.length - 1),
+                        end: () => "+=" + (aContainer.scrollWidth)
+                    }
+                });
+            }
+
+            // Marquee Archive
+            gsap.to(".archive-marquee-bg", {
+                xPercent: -15, ease: "none",
+                scrollTrigger: { trigger: "#archive-social", start: "top bottom", end: "bottom top", scrub: 1 }
+            });
+
+            // Background Parallax
+            gsap.utils.toArray('#page-archive .big-char').forEach(char => {
+                gsap.to(char, {
+                    y: -150, ease: "none",
+                    scrollTrigger: { trigger: char.parentElement, start: "top bottom", end: "bottom top", scrub: true }
+                });
+            });
+
+            // Archive Thank you
+            gsap.from(".archive-thank-you", {
+                yPercent: 100, ease: "power4.out",
+                scrollTrigger: { trigger: ".archive-thank-you", start: "top 90%", toggleActions: "play none none reverse" }
+            });
+        }
+
+        // --- Unified Elegant Preloader Sequence ---
+        window.addEventListener('load', () => {
+            initInteractiveCursors();
+            initMagneticBtns();
+
+            let progress = { val: 0 };
+            const tl = gsap.timeline();
+
+            tl.to(progress, {
+                val: 100, duration: 2, ease: "power2.inOut",
+                onUpdate: () => {
+                    document.getElementById('loader-text').innerText = Math.round(progress.val) + "%";
+                    document.getElementById('loader-bar').style.width = progress.val + "%";
+                }
+            })
+                .to('#preloader', {
+                    opacity: 0, duration: 1, ease: "power2.inOut",
+                    onComplete: () => {
+                        document.getElementById('preloader').style.display = 'none';
+                        // Reveal Main Nav
+                        gsap.to('#nav-main', { opacity: 1, duration: 1 });
+                        document.getElementById('nav-main').classList.remove('pointer-events-none');
+                        // Initiate Hero animations
+                        initHomeAnimations();
+                    }
+                }, "+=0.2");
+        });
+
+        // --- Sophisticated Dark Page Transition Logic ---
+        window.switchPage = function (targetPageId, navType) {
+            const activePage = document.querySelector('.page.active');
+            if (activePage && activePage.id === targetPageId) return;
+
+            // Nav Highlight logic
+            document.querySelectorAll('.nav-link').forEach(link => {
+                if (link.dataset.target === targetPageId) {
+                    link.classList.add('text-white'); link.classList.remove('text-gray');
+                } else {
+                    link.classList.add('text-gray'); link.classList.remove('text-white');
+                }
+            });
+
+            const curtain = document.getElementById('transition-curtain');
+            const curtainText = document.getElementById('curtain-text');
+
+            const tl = gsap.timeline();
+
+            // 1. Fade out current content slightly, bringing in dark curtain
+            tl.to(activePage, { opacity: 0, y: -40, duration: 0.6, ease: 'power3.inOut' })
+                .to(curtain, { y: '0%', duration: 0.8, ease: 'expo.inOut' }, "<0.1")
+                .to(curtainText, { opacity: 1, filter: "blur(0px)", y: 0, duration: 0.4 }, "-=0.4")
+                .add(() => {
+                    clearActiveTweens();
+
+                    if (activePage) {
+                        activePage.classList.remove('active');
+                        gsap.set(activePage, { opacity: 0, y: 0 });
+                    }
+
+                    const targetPage = document.getElementById(targetPageId);
+                    targetPage.classList.add('active');
+                    gsap.set(targetPage, { opacity: 0, y: 40 }); // Pre-set for fade in
+
+                    // Swap Navigations
+                    if (navType === 'main') {
+                        document.getElementById('nav-main').classList.remove('hidden');
+                        document.getElementById('nav-archive').classList.add('hidden');
+                        gsap.set('#nav-main', { opacity: 1 });
+                        gsap.set('#nav-archive', { opacity: 0 });
+                    } else if (navType === 'archive') {
+                        document.getElementById('nav-main').classList.add('hidden');
+                        document.getElementById('nav-archive').classList.remove('hidden');
+                        gsap.set('#nav-archive', { opacity: 1 });
+                        gsap.set('#nav-main', { opacity: 0 });
+                    }
+
+                    // Reset scroll
+                    lenis.scrollTo(0, { immediate: true });
+                    window.scrollTo(0, 0);
+
+                    setTimeout(() => ScrollTrigger.refresh(), 50);
+                })
+                // 2. Curtain sweeps away (upwards), new content fades in
+                .to(curtainText, { opacity: 0, filter: "blur(10px)", y: -20, duration: 0.3 }, "+=0.2")
+                .to(curtain, { y: '-100%', duration: 0.8, ease: 'expo.inOut' })
+                .to(document.getElementById(targetPageId), { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', clearProps: "transform" }, "-=0.5")
+                .add(() => {
+                    // Reset curtain for next time
+                    gsap.set(curtain, { y: '100%' });
+
+                    if (targetPageId === 'page-home') initHomeAnimations();
+                    if (targetPageId === 'page-about') initAboutAnimations();
+                    if (targetPageId === 'page-connect') initConnectAnimations();
+                    if (targetPageId === 'page-archive') initArchiveAnimations();
+
+                    initInteractiveCursors();
+                });
+        };
+
+        // --- Mobile Menu Management ---
+        let mobileMenuState = { main: false, archive: false };
+
+        window.toggleMobileMenu = function (menuType) {
+            const menuId = `mobile-menu-${menuType}`;
+            const menuEl = document.getElementById(menuId);
+            const links = menuEl.querySelectorAll('.mobile-nav-link');
+            const isOpen = mobileMenuState[menuType];
+
+            if (isOpen) {
+                // Close
+                gsap.to(links, { opacity: 0, y: 40, duration: 0.3, stagger: 0.05, ease: "power2.in" });
+                gsap.to(menuEl, {
+                    clipPath: "circle(0% at calc(100% - 40px) 40px)", duration: 0.8, ease: "expo.inOut", delay: 0.2,
+                    onComplete: () => { menuEl.classList.remove('open'); document.body.style.overflow = ''; }
+                });
+                mobileMenuState[menuType] = false;
+            } else {
+                // Open
+                menuEl.classList.add('open'); document.body.style.overflow = 'hidden';
+                gsap.to(menuEl, { clipPath: "circle(150% at calc(100% - 40px) 40px)", duration: 0.9, ease: "expo.inOut" });
+                gsap.to(links, { opacity: 1, y: 0, duration: 0.6, stagger: 0.1, delay: 0.4, ease: "power3.out" });
+                mobileMenuState[menuType] = true;
+            }
+        };
+
+        window.mobileNavTo = function (targetPageId, navType) {
+            const menuType = mobileMenuState.main ? 'main' : 'archive';
+            const menuEl = document.getElementById(`mobile-menu-${menuType}`);
+            const links = menuEl.querySelectorAll('.mobile-nav-link');
+
+            gsap.to(links, { opacity: 0, y: 40, duration: 0.2, stagger: 0.03, ease: "power2.in" });
+            gsap.to(menuEl, {
+                clipPath: "circle(0% at calc(100% - 40px) 40px)", duration: 0.7, ease: "expo.inOut", delay: 0.15,
+                onComplete: () => {
+                    menuEl.classList.remove('open'); document.body.style.overflow = '';
+                    mobileMenuState[menuType] = false;
+                    switchPage(targetPageId, navType);
+                }
+            });
+        };
+
+        window.mobileScrollTo = function (targetSelector, menuType) {
+            const menuEl = document.getElementById(`mobile-menu-${menuType}`);
+            const links = menuEl.querySelectorAll('.mobile-nav-link');
+            const targetEl = document.querySelector(targetSelector);
+            if (!targetEl) return;
+
+            gsap.to(links, { opacity: 0, y: 40, duration: 0.2, stagger: 0.03, ease: "power2.in" });
+            gsap.to(menuEl, {
+                clipPath: "circle(0% at calc(100% - 40px) 40px)", duration: 0.7, ease: "expo.inOut", delay: 0.15,
+                onComplete: () => {
+                    menuEl.classList.remove('open'); document.body.style.overflow = '';
+                    mobileMenuState[menuType] = false;
+                    gsap.to(window, { duration: 1.5, scrollTo: { y: targetEl, autoKill: false }, ease: "power4.inOut" });
+                }
+            });
+        };
+    </script>
+</body>
+
+</html>
